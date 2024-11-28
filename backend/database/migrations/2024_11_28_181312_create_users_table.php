@@ -13,7 +13,15 @@ return new class extends Migration
     {
         Schema::create('users', function (Blueprint $table) {
             $table->id();
+            $table->string('username')->unique();
+            $table->boolean('gender'); //0 man, 1 female
+            $table->unsignedBigInteger('question_id');
+            $table->string('answer');
+            $table->string('password');
+            $table->rememberToken();
             $table->timestamps();
+
+            $table->foreign('question_id')->references('id')->on('questions')->onDelete('cascade');
         });
     }
 
