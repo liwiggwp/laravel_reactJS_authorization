@@ -31,7 +31,8 @@ class AuthController extends Controller
             'password' => [
                 'required',
                 'string',
-                'min:8'
+                'min:8',
+                'regex:/^(?=.*[a-zа-я])(?=.*[A-ZА-Я])(?=.*\d)[a-zA-Z0-9а-яА-Я]+$/',
             ],
         ], [
             'username.required' => 'Имя пользователя обязательно для заполнения.',
@@ -49,9 +50,9 @@ class AuthController extends Controller
             'answer.min' => 'Ответ не может быть меньше 3 символов.',
             'answer.max' => 'Ответ не может превышать 255 символов.',
             'password.required' => 'Пароль обязательно для заполнения.',
-            'password.regex:/^(?=.*[a-zа-я])(?=.*[A-ZА-Я])(?=.*\d)[a-zA-Z0-9а-яА-Я]+$/',
             'password.string' => 'Пароль должен быть строкой.',
             'password.min' => 'Пароль должен содержать минимум 8 символов.',
+            'password.regex' => 'Пароль должен содержать минимум 1 заглавную букву, 1 строчную букву и 1 цифру.',
         ]);
         if ($validator->fails()) {
             return response()->json([
