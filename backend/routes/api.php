@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AuthController;
 use App\Http\Controllers\QuestionController;
 use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
@@ -22,8 +23,15 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 
 
 Route::group(['middleware' => 'api'], function () {
-    // Route::post('login', [AuthController::class, 'login']);
-    // Route::post('register', [AuthController::class, 'register']);
+    Route::post('/login', [AuthController::class, 'login']);
+    Route::post('/register', [AuthController::class, 'register']);
+
+    Route::post('/existsUser', [AuthController::class, 'existsUser']);
+    Route::post('/reset-password', [AuthController::class, 'resetPassword']);
+
+    Route::post('/logout', [AuthController::class, 'logout']);
+    Route::get('/me', [AuthController::class, 'me']);
+    
     Route::get('/questions', [QuestionController::class, 'index']);
     Route::get('/users', [UserController::class, 'index']);
 });
