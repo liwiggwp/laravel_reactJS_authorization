@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import AuthServices from "../../Services/AuthServices";
 import CssBaseline from "@mui/material/CssBaseline";
 import TextField from "@mui/material/TextField";
 import Link from "@mui/material/Link";
@@ -16,12 +17,15 @@ import InputAdornment from "@mui/material/InputAdornment";
 import FormControl from "@mui/material/FormControl";
 import CloseIcon from "@mui/icons-material/Close";
 import { useNavigate } from "react-router-dom";
+import { FormHelperText } from "@mui/material";
 import LoadingButton from "@mui/lab/LoadingButton";
 
 export default function Login() {
   const navigate = useNavigate();
+  const { http, setToken } = AuthServices();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [errors, setErrors] = useState({});
 
   const [showPassword, setShowPassword] = React.useState(false);
   const handleClickShowPassword = () => setShowPassword((show) => !show);
@@ -29,6 +33,36 @@ export default function Login() {
     event.preventDefault();
   };
   const [loading, setLoading] = React.useState(false);
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    setLoading(true);
+    try {
+      const data = new FormData(event.currentTarget);
+      http
+        .post("/login", {
+          username: data.get("username"),
+          password: data.get("password"),
+        })
+        .then((response) => {
+          // console.log(response.data);
+          if (response.data.status === 40) {
+            setErrors(response.data.validate_err);
+            setLoading(false);
+          } else if (response.data.status === 401) {
+            setErrors(response.data);
+            setLoading(false);
+          } else {
+            setToken(response.data.access_token);
+            setLoading(false);
+          }
+        });
+    } catch (error) {
+      setErrors(error.response.data.errors);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleClose = () => {
     navigate("/");
@@ -84,7 +118,13 @@ export default function Login() {
             <Typography component="h1" variant="h5">
               Авторизоваться
             </Typography>
-            <Box component="form" noValidate autoComplete="off" sx={{ mt: 1 }}>
+            <Box
+              component="form"
+              noValidate
+              autoComplete="off"
+              onSubmit={handleSubmit}
+              sx={{ mt: 1 }}
+            >
               <Grid container spacing={2}>
                 <Grid item xs={12}>
                   <TextField
@@ -111,10 +151,37 @@ export default function Login() {
                     fullWidth
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
+                    error={errors && errors.username ? true : false}
+                    helperText={
+                      errors && errors.username ? errors.username : ""
+                    }
                   />
                 </Grid>
                 <Grid item xs={12}>
-                  <FormControl variant="outlined" fullWidth required>
+                  <FormControl
+                    variant="outlined"
+                    error={errors && errors.password ? true : false}
+                    fullWidth
+                    required
+                    sx={{
+                      input: { color: "rgb(18,18,18)" },
+                      label: {
+                        color:
+                          errors && errors.password ? "red" : "rgb(18,18,18)",
+                      },
+                      "& .MuiOutlinedInput-root": {
+                        "&:hover fieldset": {
+                          borderColor: "rgba(18,18,18,0.7)",
+                        },
+                        "&.Mui-focused fieldset": {
+                          borderColor: "rgba(18,18,18,0.7)",
+                        },
+                      },
+                      "& label.Mui-focused": {
+                        color: "rgba(18,18,18,0.7)",
+                      },
+                    }}
+                  >
                     <InputLabel htmlFor="outlined-adornment-password">
                       Пароль
                     </InputLabel>
@@ -138,13 +205,18 @@ export default function Login() {
                       value={password}
                       onChange={(event) => setPassword(event.target.value)}
                     />
+                    {errors && errors.password && (
+                      <FormHelperText sx={{ color: "red" }}>
+                        {errors.password}
+                      </FormHelperText>
+                    )}
                   </FormControl>
                 </Grid>
               </Grid>
 
               <LoadingButton
-                type="submit"
                 loading={loading}
+                type="submit"
                 fullWidth
                 variant="contained"
                 sx={{

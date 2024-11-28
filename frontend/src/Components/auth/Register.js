@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import AuthServices from "../../Services/AuthServices";
 import CssBaseline from "@mui/material/CssBaseline";
 import Link from "@mui/material/Link";
 import Paper from "@mui/material/Paper";
@@ -18,6 +19,7 @@ import FormControl from "@mui/material/FormControl";
 import TextField from "@mui/material/TextField";
 import CloseIcon from "@mui/icons-material/Close";
 import Select from "@mui/material/Select";
+import { FormHelperText } from "@mui/material";
 import LoadingButton from "@mui/lab/LoadingButton";
 
 const genderOptions = [
@@ -27,6 +29,7 @@ const genderOptions = [
 
 export default function Register() {
   const navigate = useNavigate();
+  const { http } = AuthServices();
 
   const [gender, setGender] = useState("");
   const [questions, setQuestions] = useState([]);
@@ -35,6 +38,15 @@ export default function Register() {
   const [username, setUsername] = useState("");
   const [answer, setAnswer] = useState("");
   const [password, setPassword] = useState("");
+  const [errors, setErrors] = useState({});
+
+  useEffect(() => {
+    const getQuestions = async () => {
+      const res = await http.get("/questions");
+      setQuestions(res.data);
+    };
+    getQuestions();
+  }, []);
 
   const [showPassword, setShowPassword] = React.useState(false);
   const handleClickShowPassword = () => setShowPassword((show) => !show);
@@ -42,6 +54,34 @@ export default function Register() {
     event.preventDefault();
   };
   const [loading, setLoading] = React.useState(false);
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    setLoading(true);
+    try {
+      const data = new FormData(event.currentTarget);
+      http
+        .post("/register", {
+          username: data.get("username"),
+          gender: data.get("gender"),
+          question_id: data.get("question_id"),
+          answer: data.get("answer"),
+          password: data.get("password"),
+        })
+        .then((response) => {
+          // console.log(response.data);
+          if (response.data.status === 200) {
+            navigate("/login");
+          } else {
+            setErrors(response.data.validate_err);
+          }
+        });
+    } catch (error) {
+      setErrors(error.response.data.errors);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleClose = () => {
     navigate("/");
@@ -99,6 +139,7 @@ export default function Register() {
             component="form"
             noValidate
             autoComplete="off"
+            onSubmit={handleSubmit}
             sx={{ mt: 3 }}
           >
             <Grid container spacing={2}>
@@ -127,7 +168,8 @@ export default function Register() {
                   fullWidth
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-
+                  error={errors && errors.username ? true : false}
+                  helperText={errors && errors.username ? errors.username : ""}
                 />
               </Grid>
               <Grid item xs={12} sm={6}>
@@ -135,7 +177,23 @@ export default function Register() {
                   fullWidth
                   variant="outlined"
                   required
-                
+                  sx={{
+                    label: {
+                      color: errors && errors.gender ? "red" : "rgb(18,18,18)",
+                    },
+                    "& .MuiInputBase-root": { color: "rgb(18,18,18)" },
+                    "& .MuiOutlinedInput-root": {
+                      "&:hover fieldset": {
+                        borderColor: "rgba(18,18,18,0.7)",
+                      },
+                      "&.Mui-focused fieldset": {
+                        borderColor: "rgba(18,18,18,0.7)",
+                      },
+                    },
+                    "& label.Mui-focused": {
+                      color: "rgba(18,18,18,0.7)",
+                    },
+                  }}
                 >
                   <InputLabel>Пол</InputLabel>
                   <Select
@@ -143,6 +201,7 @@ export default function Register() {
                     name="gender"
                     value={gender}
                     onChange={(e) => setGender(e.target.value)}
+                    error={errors && errors.gender ? true : false}
                   >
                     {genderOptions.map((option, i) => (
                       <MenuItem key={i} value={option.value}>
@@ -150,7 +209,11 @@ export default function Register() {
                       </MenuItem>
                     ))}
                   </Select>
-       
+                  {errors && errors.gender && (
+                    <FormHelperText sx={{ color: "red" }}>
+                      {errors.gender}
+                    </FormHelperText>
+                  )}
                 </FormControl>
               </Grid>
 
@@ -159,7 +222,24 @@ export default function Register() {
                   fullWidth
                   variant="outlined"
                   required
-                
+                  sx={{
+                    label: {
+                      color:
+                        errors && errors.questionId ? "red" : "rgb(18,18,18)",
+                    },
+                    "& .MuiInputBase-root": { color: "rgb(18,18,18)" },
+                    "& .MuiOutlinedInput-root": {
+                      "&:hover fieldset": {
+                        borderColor: "rgba(18,18,18,0.7)",
+                      },
+                      "&.Mui-focused fieldset": {
+                        borderColor: "rgba(18,18,18,0.7)",
+                      },
+                    },
+                    "& label.Mui-focused": {
+                      color: "rgba(18,18,18,0.7)",
+                    },
+                  }}
                 >
                   <InputLabel>Вопрос</InputLabel>
                   <Select
@@ -167,6 +247,7 @@ export default function Register() {
                     name="question_id"
                     value={questionId}
                     onChange={(e) => setQuestionId(e.target.value)}
+                    error={errors && errors.question_id ? true : false}
                   >
                     {questions.map((option, i) => (
                       <MenuItem key={i} value={option.id}>
@@ -174,7 +255,11 @@ export default function Register() {
                       </MenuItem>
                     ))}
                   </Select>
-            
+                  {errors && errors.question_id && (
+                    <FormHelperText sx={{ color: "red" }}>
+                      {errors.question_id}
+                    </FormHelperText>
+                  )}
                 </FormControl>
               </Grid>
               <Grid item xs={12}>
@@ -182,11 +267,6 @@ export default function Register() {
                   sx={{
                     input: { color: "rgb(18,18,18)" },
                     label: { color: "rgb(18,18,18)" },
-                    // "& .MuiOutlinedInput-root": {
-                    //   "&:hover fieldset": {
-                    //     borderColor: "rgba(18,18,18,0.7)",
-                    //   },
-                    // },
                     "& .MuiOutlinedInput-root": {
                       "&:hover fieldset": {
                         borderColor: "rgba(18,18,18,0.7)",
@@ -207,6 +287,8 @@ export default function Register() {
                   label="Ответ на вопрос"
                   value={answer}
                   onChange={(e) => setAnswer(e.target.value)}
+                  error={errors && errors.answer ? true : false}
+                  helperText={errors && errors.answer ? errors.answer[0] : ""}
                 />
               </Grid>
               <Grid item xs={12}>
@@ -214,7 +296,24 @@ export default function Register() {
                   variant="outlined"
                   fullWidth
                   required
-                 
+                  sx={{
+                    input: { color: "rgb(18,18,18)" },
+                    label: {
+                      color:
+                        errors && errors.password ? "red" : "rgb(18,18,18)",
+                    },
+                    "& .MuiOutlinedInput-root": {
+                      "&:hover fieldset": {
+                        borderColor: "rgba(18,18,18,0.7)",
+                      },
+                      "&.Mui-focused fieldset": {
+                        borderColor: "rgba(18,18,18,0.7)",
+                      },
+                    },
+                    "& label.Mui-focused": {
+                      color: "rgba(18,18,18,0.7)",
+                    },
+                  }}
                 >
                   <InputLabel htmlFor="outlined-adornment-password">
                     Пароль
@@ -238,8 +337,13 @@ export default function Register() {
                     }
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
+                    error={errors && errors.password ? true : false}
                   />
-                
+                  {errors && errors.password && (
+                    <FormHelperText sx={{ color: "red" }}>
+                      {errors.password}
+                    </FormHelperText>
+                  )}
                 </FormControl>
               </Grid>
             </Grid>
