@@ -72,38 +72,37 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'username' => 'required|string',
-            'password' => 'required|string',
+            'username' => 'required',
+            'password' => 'required',
         ], [
             'username.required' => 'Имя пользователя обязательно для заполнения.',
             'password.required' => 'Пароль обязательно для заполнения.',
         ]);
-
         if ($validator->fails()) {
             return response()->json([
                 'status' => 40,
                 'validate_err' => $validator->messages(),
             ]);
-        }
+        } else {
+            $credentials = request(['username', 'password']);
 
-        $credentials = $request->only('username', 'password');
-
-        if (!$token = auth()->attempt($credentials)) {
-            $user = User::where('username', $request->input('username'))->first();
-            if (!$user) {
-                return response()->json([
-                    'status' => 401,
-                    'error' => 'Пользователь с таким именем не существует.',
-                ]);
-            } else {
-                return response()->json([
-                    'status' => 401,
-                    'error' => 'Неправильный пароль.',
-                ]);
+            if (!$token = auth()->attempt($credentials)) {
+                $user = User::where('username', $request->input('username'))->first();
+                if (!$user) {
+                    return response()->json([
+                        'status' => 401,
+                        'username' => 'Пользователь не существует.',
+                    ]);
+                } else {
+                    return response()->json([
+                        'status' => 401,
+                        'password' => 'Неправильный пароль.',
+                    ]);
+                }
             }
-        }
 
-        return $this->respondWithToken($token);
+            return $this->respondWithToken($token);
+        }
     }
 
     public function logout(Request $request)
@@ -176,7 +175,7 @@ class AuthController extends Controller
             'password' => [
                 'required',
                 'string',
-                'min:8', 
+                'min:8',
                 'regex:/^(?=.*[a-zа-я])(?=.*[A-ZА-Я])(?=.*\d)[a-zA-Z0-9а-яА-Я]+$/',
             ],
         ], [
