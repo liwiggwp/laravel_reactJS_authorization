@@ -1,8 +1,6 @@
 import React, { useState } from "react";
 import AuthServices from "../../Services/AuthServices";
 import Button from "@mui/material/Button";
-import CssBaseline from "@mui/material/CssBaseline";
-import TextField from "@mui/material/TextField";
 import Link from "@mui/material/Link";
 import Paper from "@mui/material/Paper";
 import Box from "@mui/material/Box";
@@ -12,11 +10,13 @@ import LoginImage from "../../Assets/LoginImage.jpg";
 import IconButton from "@mui/material/IconButton";
 import CloseIcon from "@mui/icons-material/Close";
 import { useNavigate } from "react-router-dom";
+import TextFieldComponent from "./TextFieldComponent";
 
 export default function Recover() {
   const navigate = useNavigate();
   const { http } = AuthServices();
-  const [username, setUsername] = useState("");
+
+  const [formData, setFormData] = useState({ username: "" });
   const [errors, setErrors] = useState({});
 
   const [flagUsername, setFlagUsername] = useState(false);
@@ -26,32 +26,28 @@ export default function Recover() {
 
   const [answer, setAnswer] = useState("");
 
-  const handleSubmitLogin = (event) => {
+  const handleSubmitUsername = async (event) => {
     event.preventDefault();
-    const data = {
-      username,
-    };
-    // console.log(data);
+    setErrors({});
+    try {
+      const response = await http.post("/existsUser", formData);
 
-    http
-      .post("/existsUser", data)
-      .then((response) => {
-        if (response.data.status === 401) {
-          setErrors(response.data);
-          // console.log(response.data);
-        } else if (response.data.status === 200) {
-          // console.log(response.data);
-          setQuestionUser(response.data.question.text);
-          setAnswerUser(response.data.answer);
-          setFlagUsername(true);
-        } else {
-          setErrors(response.data.validate_err);
-          // console.log(response.data.validate_err);
-        }
-      })
-      .catch((error) => {
-        console.log(error);
-      });
+      if (response.data.status === 401) {
+        setErrors(response.data);
+      } else if (response.data.status === 200) {
+        setQuestionUser(response.data.question.text);
+        setAnswerUser(response.data.answer);
+        setFlagUsername(true);
+      } else {
+        setErrors(response.data.validate_err);
+      }
+    } catch (error) {
+      setErrors(error.response?.data?.errors || {});
+    }
+  };
+
+  const handleInputChange = (field) => (event) => {
+    setFormData({ ...formData, [field]: event.target.value });
   };
 
   function showUsername() {
@@ -60,7 +56,7 @@ export default function Recover() {
         component="form"
         noValidate
         autoComplete="off"
-        onSubmit={handleSubmitLogin}
+        onSubmit={handleSubmitUsername}
         sx={{ mt: 1 }}
       >
         <Typography
@@ -72,32 +68,12 @@ export default function Recover() {
           Введите ваш логин
         </Typography>
         <Grid item xs={12}>
-          <TextField
-            sx={{
-              input: { color: "rgb(18,18,18)" },
-              label: { color: "rgb(18,18,18)" },
-              "& .MuiOutlinedInput-root": {
-                "&:hover fieldset": {
-                  borderColor: "rgba(18,18,18,0.7)",
-                },
-                "&.Mui-focused fieldset": {
-                  borderColor: "rgba(18,18,18,0.7)",
-                },
-              },
-              "& label.Mui-focused": {
-                color: "rgba(18,18,18,0.7)",
-              },
-            }}
-            autoComplete="given-name"
-            id="username"
-            name="username"
+          <TextFieldComponent
             label="Логин"
-            required
-            fullWidth
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            error={errors.message ? true : false}
-            helperText={errors.message ? errors.message : ""}
+            value={formData.username}
+            onChange={handleInputChange("username")}
+            error={errors.message}
+            helperText={errors.message}
           />
         </Grid>
         <Button
@@ -144,10 +120,10 @@ export default function Recover() {
   }
   const handleSubmitQuestion = (event) => {
     event.preventDefault();
-
     if (answer === answerUser) {
-      // console.log("good");
-      navigate("/recover/passwordChange", { state: { username } });
+      navigate("/recover/passwordChange", {
+        state: { username: formData.username },
+      });
     } else {
       setErrors({ answer: "Неправильный ответ" });
     }
@@ -172,59 +148,17 @@ export default function Recover() {
         </Typography>
         <Grid container spacing={2}>
           <Grid item xs={12}>
-            <TextField
-              sx={{
-                input: { color: "rgb(18,18,18)" },
-                label: { color: "rgb(18,18,18)" },
-                "& .MuiOutlinedInput-root": {
-                  "&:hover fieldset": {
-                    borderColor: "rgba(18,18,18,0.7)",
-                  },
-                  "&.Mui-focused fieldset": {
-                    borderColor: "rgba(18,18,18,0.7)",
-                  },
-                },
-                "& label.Mui-focused": {
-                  color: "rgba(18,18,18,0.7)",
-                },
-              }}
-              id="outlined-read-only-input"
-              label="Ваш вопрос"
-              value={questionUser}
-              InputProps={{
-                readOnly: true,
-              }}
-              fullWidth
-            />
+            <TextFieldComponent label="Ваш вопрос" value={questionUser} />
           </Grid>
           <Grid item xs={12}>
-            <TextField
-              sx={{
-                input: { color: "rgb(18,18,18)" },
-                label: { color: errors && errors.answer ? "red" : "rgb(18,18,18)", },
-                "& .MuiOutlinedInput-root": {
-                  "&:hover fieldset": {
-                    borderColor: "rgba(18,18,18,0.7)",
-                  },
-                  "&.Mui-focused fieldset": {
-                    borderColor: "rgba(18,18,18,0.7)",
-                  },
-                },
-                "& label.Mui-focused": {
-                  color: "rgba(18,18,18,0.7)",
-                },
-              }}
-              autoComplete="given-name"
-              name="answer"
-              required
-              fullWidth
-              id="answer"
+          <TextFieldComponent
               label="Ответ на вопрос"
               value={answer}
               onChange={(e) => setAnswer(e.target.value)}
-              error={errors && errors.answer ? true : false}
-              helperText={errors && errors.answer ? errors.answer : ""}
+              error={errors.answer}
+              helperText={errors.answer}
             />
+            
           </Grid>
         </Grid>
 
@@ -287,7 +221,6 @@ export default function Recover() {
     <>
       <Grid container component="main" sx={{ height: "100vh" }}>
         <Grid container>
-          <CssBaseline />
           <Grid
             item
             xs={false}
