@@ -3,7 +3,7 @@ import { Box, Typography, Grid, Link } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import AuthServices from "../../Services/AuthServices";
 import LoadingButton from "@mui/lab/LoadingButton";
-import TextFieldComponent from "./TextFieldComponent";
+import TextField from "./TextFieldComponent";
 import PasswordField from "./PasswordFieldComponent";
 
 export default function LoginForm() {
@@ -28,7 +28,6 @@ export default function LoginForm() {
         navigate("/"); 
       }
     } catch (error) {
-      console.error("Ошибка:", error);
       setErrors(error.response?.data?.errors || {});
     } finally {
       setLoading(false);
@@ -56,7 +55,7 @@ export default function LoginForm() {
       <Box component="form" onSubmit={handleSubmit} sx={{ mt: 1 }}>
         <Grid container spacing={2}>
           <Grid item xs={12}>
-            <TextFieldComponent
+            <TextField
               label="Логин"
               value={formData.username}
               onChange={handleInputChange("username")}
