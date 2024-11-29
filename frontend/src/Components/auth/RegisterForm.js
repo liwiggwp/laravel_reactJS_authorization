@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Box, Typography, Grid, Link } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import AuthServices from "../../Services/AuthServices";
-import LoadingButton from "@mui/lab/LoadingButton";
+import LoadingButton from "./LoadingButtonComponent";
 import TextField from "./TextFieldComponent";
 import PasswordField from "./PasswordFieldComponent";
 import SelectField from "./SelectFieldComponent";
@@ -129,23 +129,7 @@ export default function RegisterForm() {
           loading={loading}
           type="submit"
           fullWidth
-          variant="contained"
-          sx={{
-            mt: 3,
-            mb: 2,
-            background: "black",
-            borderColor: "black",
-            color: "white",
-            borderStyle: "solid",
-            borderWidth: "1px",
-            "&:hover": {
-              backgroundColor: "#fff",
-              color: "black",
-              borderColor: "black",
-              borderStyle: "solid",
-              borderWidth: "1px",
-            },
-          }}
+          sx={{ mt: 3, mb: 2 }}
         >
           Зарегистрироваться
         </LoadingButton>

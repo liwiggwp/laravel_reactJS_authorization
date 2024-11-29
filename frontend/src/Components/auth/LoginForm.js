@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Box, Typography, Grid, Link } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import AuthServices from "../../Services/AuthServices";
-import LoadingButton from "@mui/lab/LoadingButton";
+import LoadingButton from "./LoadingButtonComponent";
 import TextField from "./TextFieldComponent";
 import PasswordField from "./PasswordFieldComponent";
 
@@ -74,14 +74,7 @@ export default function LoginForm() {
           loading={loading}
           type="submit"
           fullWidth
-          variant="contained"
-          sx={{
-            mt: 3,
-            mb: 2,
-            background: "black",
-            color: "white",
-            "&:hover": { backgroundColor: "#fff", color: "black" },
-          }}
+          sx={{ mt: 3, mb: 2 }}
         >
           Войти
         </LoadingButton>

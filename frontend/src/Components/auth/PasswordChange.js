@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import AuthServices from "../../Services/AuthServices";
-import Button from "@mui/material/Button";
 import Link from "@mui/material/Link";
 import Paper from "@mui/material/Paper";
 import Box from "@mui/material/Box";
@@ -11,25 +10,24 @@ import IconButton from "@mui/material/IconButton";
 import CloseIcon from "@mui/icons-material/Close";
 import { useNavigate } from "react-router-dom";
 import { useLocation } from "react-router-dom";
-import { FormHelperText } from "@mui/material";
-import Visibility from "@mui/icons-material/Visibility";
-import VisibilityOff from "@mui/icons-material/VisibilityOff";
-import OutlinedInput from "@mui/material/OutlinedInput";
-import InputLabel from "@mui/material/InputLabel";
-import InputAdornment from "@mui/material/InputAdornment";
-import FormControl from "@mui/material/FormControl";
 import PasswordField from "./PasswordFieldComponent";
+import LoadingButton from "./LoadingButtonComponent";
 
 export default function PasswordChange() {
   const navigate = useNavigate();
   const { http } = AuthServices();
   const location = useLocation();
 
-  const [formData, setFormData] = useState({ username: location.state.username, password: "" });
+  const [formData, setFormData] = useState({
+    username: location.state.username,
+    password: "",
+  });
   const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+    setLoading(true);
     setErrors({});
     try {
       const response = await http.post("/reset-password", formData);
@@ -41,10 +39,11 @@ export default function PasswordChange() {
       }
     } catch (error) {
       setErrors(error.response?.data?.errors || {});
-    } 
+    } finally {
+      setLoading(false);
+    }
   };
 
-  
   const handleClose = () => {
     navigate("/");
   };
@@ -125,29 +124,14 @@ export default function PasswordChange() {
                     error={errors.password}
                   />
                 </Grid>
-                <Button
+                <LoadingButton
+                  loading={loading}
                   type="submit"
                   fullWidth
-                  variant="contained"
-                  sx={{
-                    mt: 3,
-                    mb: 2,
-                    background: "black",
-                    borderColor: "black",
-                    borderStyle: "solid",
-                    borderWidth: "1px",
-                    color: "white",
-                    "&:hover": {
-                      backgroundColor: "#fff",
-                      color: "black",
-                      borderColor: "black",
-                      borderStyle: "solid",
-                      borderWidth: "1px",
-                    },
-                  }}
+                  sx={{ mt: 3, mb: 2 }}
                 >
                   Продолжить
-                </Button>
+                </LoadingButton>
                 <Grid
                   container
                   direction="column"

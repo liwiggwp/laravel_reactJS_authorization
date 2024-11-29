@@ -11,6 +11,7 @@ import IconButton from "@mui/material/IconButton";
 import CloseIcon from "@mui/icons-material/Close";
 import { useNavigate } from "react-router-dom";
 import TextFieldComponent from "./TextFieldComponent";
+import LoadingButton from "./LoadingButtonComponent";
 
 export default function Recover() {
   const navigate = useNavigate();
@@ -18,6 +19,8 @@ export default function Recover() {
 
   const [formData, setFormData] = useState({ username: "" });
   const [errors, setErrors] = useState({});
+  const [loadingUsername, setLoadingUsername] = useState(false);
+  const [loadingAnswer, setLoadingAnswer] = useState(false);
 
   const [flagUsername, setFlagUsername] = useState(false);
 
@@ -29,6 +32,7 @@ export default function Recover() {
   const handleSubmitUsername = async (event) => {
     event.preventDefault();
     setErrors({});
+    setLoadingUsername(true);
     try {
       const response = await http.post("/existsUser", formData);
 
@@ -43,6 +47,8 @@ export default function Recover() {
       }
     } catch (error) {
       setErrors(error.response?.data?.errors || {});
+    } finally {
+      setLoadingUsername(false);
     }
   };
 
@@ -76,29 +82,15 @@ export default function Recover() {
             helperText={errors.message}
           />
         </Grid>
-        <Button
+
+        <LoadingButton
+          loading={loadingUsername}
           type="submit"
           fullWidth
-          variant="contained"
-          sx={{
-            mt: 3,
-            mb: 2,
-            background: "black",
-            borderColor: "black",
-            borderStyle: "solid",
-            color: "white",
-            borderWidth: "1px",
-            "&:hover": {
-              backgroundColor: "#fff",
-              color: "black",
-              borderColor: "black",
-              borderStyle: "solid",
-              borderWidth: "1px",
-            },
-          }}
+          sx={{ mt: 3, mb: 2 }}
         >
           Продолжить
-        </Button>
+        </LoadingButton>
         <Grid
           container
           direction="column"
@@ -120,6 +112,7 @@ export default function Recover() {
   }
   const handleSubmitQuestion = (event) => {
     event.preventDefault();
+    setLoadingAnswer(true);
     if (answer === answerUser) {
       navigate("/recover/passwordChange", {
         state: { username: formData.username },
@@ -127,6 +120,7 @@ export default function Recover() {
     } else {
       setErrors({ answer: "Неправильный ответ" });
     }
+    setLoadingAnswer(false);
   };
 
   function showQuestionAndAnswer() {
@@ -151,40 +145,23 @@ export default function Recover() {
             <TextFieldComponent label="Ваш вопрос" value={questionUser} />
           </Grid>
           <Grid item xs={12}>
-          <TextFieldComponent
+            <TextFieldComponent
               label="Ответ на вопрос"
               value={answer}
               onChange={(e) => setAnswer(e.target.value)}
               error={errors.answer}
               helperText={errors.answer}
             />
-            
           </Grid>
         </Grid>
-
-        <Button
+        <LoadingButton
+          loading={loadingAnswer}
           type="submit"
           fullWidth
-          variant="contained"
-          sx={{
-            mt: 3,
-            mb: 2,
-            background: "black",
-            borderColor: "black",
-            borderStyle: "solid",
-            borderWidth: "1px",
-            color: "white",
-            "&:hover": {
-              backgroundColor: "#fff",
-              color: "black",
-              borderColor: "black",
-              borderStyle: "solid",
-              borderWidth: "1px",
-            },
-          }}
+          sx={{ mt: 3, mb: 2 }}
         >
           Продолжить
-        </Button>
+        </LoadingButton>
         <Grid
           container
           direction="column"
